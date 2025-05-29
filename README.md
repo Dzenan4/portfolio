@@ -61,7 +61,13 @@ Welcome! This repository serves as a collection of my coding projects. Each proj
 
 ---
 
-## 🧰 Technologies & Tools
+## Resume
+
+- For those who need it, I have attached my resume! You can view it here: [View my resume](https://github.com/Dzenan4/portfolio/blob/main/DZ-WebDev-Resume.pdf)
+
+---
+
+## Technologies & Tools
 
 - **Languages**: `JavaScript`, `Python`, `Java`, `PHP`, `SQL`, `C++`, `Ruby`, `SML` 
 - **Frameworks/Libraries**: `React`, `Vue`, `FastAPI`, `Laravel`, `Socket.IO`, `Selenium`
@@ -70,7 +76,7 @@ Welcome! This repository serves as a collection of my coding projects. Each proj
 
 ---
 
-## 📫 Contact
+## Contact
 
 Feel free to reach out:
 
