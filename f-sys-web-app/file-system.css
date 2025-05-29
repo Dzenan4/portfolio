@@ -1,0 +1,116 @@
+h1, h2, h3, h4, h5, h6, input, label, li, option, select {
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
+
+.file-header-container {
+    top: 0px;
+    bottom: 0px;
+    background-color: #3157e0;
+    padding: 1px;
+    text-align: center;
+}
+
+.file-header-text {
+    margin-left: auto;
+    margin-right: auto;
+    width: 20%;
+    background-color: white;
+    color: #3157e0;
+    font-size: 80px;
+    font-weight: bold;
+    border-width: 3px;
+    border-radius: 35% 0% 35%;
+    border-color: black;
+    border-style: solid;
+    margin-top: 25px;
+    margin-bottom: 0px;
+    text-align: center;
+}
+
+.file-sub-text {
+    margin-top: 10px;
+    color: white;
+    font-size: 30px;
+    font-weight: lighter;
+}
+
+.file-container {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.filter-select {
+    font-size: 16px;
+}
+
+.file-actions-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.file-list {
+    list-style-type: none;
+}
+
+.list-entry-div {
+    text-align: center;
+    width: 30%;
+    display: flex;
+    padding: 5px;
+    margin: 20px auto;
+    justify-content: space-between;
+}
+
+.list-entry-file {
+    margin-top: 4px;
+    margin-right: 15px;
+    background-color: white;
+    border-width: 0;
+    font-size: 16px;
+}
+
+.list-entry-file:hover {
+    transition: ease-in-out 0.1s;
+    font-weight: bolder;
+    color: #3157e0;
+    text-decoration: underline;
+}
+
+.list-entry-action, .file-action {
+    margin: 0px 5px;
+    font-size: 16px;
+    color: white;
+    background-color: #3157e0;
+    padding: 2px 5px;
+}
+
+.list-entry-action:hover, .file-action:hover {
+    transition: ease-in 0.3s;
+    color: #3157e0;
+    background-color: white;
+}
+
+.file-upload-input {
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    margin-right: -60px;
+}
+
+.rename-file-button {
+    background-color: #7ca9f2;
+}
+
+.rename-file-input {
+    font-size: 16px;
+}
+
+.invalid-upload-container {
+    justify-content: right;
+    text-align: right;
+
+}
+
+.error-text {
+    color: red;
+    font-size: 16px;
+    margin: 0;
+}

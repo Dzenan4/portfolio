@@ -1,0 +1,89 @@
+h1, h2, h3, h4, h5, h6, input, label {
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
+
+.file-header-container {
+    top: 0px;
+    bottom: 0px;
+    background-color: #3157e0;
+    padding: 1px;
+    text-align: center;
+}
+
+.file-header-text {
+    margin-left: auto;
+    margin-right: auto;
+    width: 20%;
+    background-color: white;
+    color: #3157e0;
+    font-size: 80px;
+    font-weight: bold;
+    border-width: 3px;
+    border-radius: 35% 0% 35%;
+    border-color: black;
+    border-style: solid;
+    margin-top: 25px;
+    margin-bottom: 0px;
+}
+
+.file-sub-text {
+    margin-top: 10px;
+    color: white;
+    font-size: 30px;
+    font-weight: lighter;
+}
+
+.login-container {
+    margin: 50px auto;
+    width: 30%;
+    padding: 40px 0px;
+    padding-bottom: 50px;
+    text-align: center;
+    background-color: #dadde6;
+    border-width: 3px;
+    border-color: black;
+    border-style: solid;
+}
+
+.login-text {
+    font-size: 25px;
+    margin: 0px;
+    margin-bottom: 2px;
+}
+
+.login-label {
+    font-size: 20px;
+    margin: 5px;
+    color: #3157e0;
+    font-weight: bolder;
+}
+
+.login-input {
+    font-size: 20px;
+    padding: 5px;
+    margin: 0px;
+    margin-top: 20px;
+    border-width: 3px;
+    width: 55%;
+}
+
+.login-button {
+    font-size: 20px;
+    color: white;
+    background-color: #3157e0;
+    padding: 5px;
+    margin: 0px;
+}
+
+.login-button:hover {
+    transition: ease-in 0.3s;
+    background-color: darkblue;
+}
+
+.login-error-text {
+    font-weight: lighter;
+    font-size: 20px;
+    color: red;
+    margin: auto;
+    text-align: center;
+}

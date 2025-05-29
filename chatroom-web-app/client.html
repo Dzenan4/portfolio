@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <link rel="stylesheet" type="text/css" href="/public/client.css">
+   <title>Chat Page</title>
+   <script src="/socket.io/socket.io.js"></script>
+   <script>
+      let users = []; // Array for holding all users in same room as this socket
+      let currentRoom;
+      let currentUser; // Nickname of this socket
+      let currentUserId; // ID of this socket
+      let admin; // Nickname of admin of this socket's room
+      let blockedUsers = new Set(); // Set of each socket's blocked users
+
+      var socketio = io.connect();
+
+      // For displaying an alert for a room name being taken
+      socketio.on("room_name_taken", (data) => {
+         alert(data['message']);
+      });
+
+      // For displaying received messages
+      socketio.on("message_to_client", function (data) {
+         if (!blockedUsers.has(data['username'])) {
+            document.getElementById("chatlog").prepend(document.createElement("hr"));
+            document.getElementById("chatlog").prepend(document.createTextNode(data['username'] + ": " + data['message']));
+         }
+      });
+
+      // For displaying private messages
+      socketio.on("private_msg_received", (data) => {
+         if (!blockedUsers.has(data['sender'])) {
+            console.log(blockedUsers);
+            document.getElementById("chatlog").prepend(document.createElement("hr"));
+            document.getElementById("chatlog").prepend(document.createTextNode(data['message']));
+         }
+      });
+
+      // Message to user who was banned from room
+      socketio.on("banned_from_room_message", (data) => {
+         alert(data['message']);
+      }, false);
+
+      // For modifying display of users list after a user kicked from room
+      socketio.on("kicked_room_message", (data) => {
+         document.getElementById("chatlog").prepend(document.createElement("hr"));
+         document.getElementById("chatlog").prepend(document.createTextNode(data['message']));
+
+         // Giving admin permissions to room creator
+         if (data['admin'] == currentUser) {
+            admin = true;
+
+            if (document.getElementById("clear-chat-btn") == undefined) {
+               let clear_chat_btn = document.createElement('button');
+               clear_chat_btn.textContent = 'Clear Chat';
+               clear_chat_btn.id = 'clear-chat-btn';
+
+               clear_chat_btn.addEventListener('click', () => {
+                  socketio.emit("clear_chat_req", { room: currentRoom });
+               }, false);
+
+               document.getElementById("send-message-btn").insertAdjacentElement("afterend", clear_chat_btn);
+            }
+
+         } else {
+            admin = false;
+            document.getElementById("clear-chat-btn")?.remove();
+
+         }
+
+         // Displaying users and user interactions on page
+         users = data['room_users'];
+         let usersList = document.getElementById("room-users-list");
+         usersList.innerHTML = "";
+         for (const user of users) {
+            let userEntry = document.createElement("li");
+            let userBtn = document.createElement("button");
+            userBtn.textContent = user;
+            userBtn.id = user;
+
+            // Adding user interaction buttons for all users in room
+            userBtn.addEventListener("click", () => {
+               removeActionButtons();
+
+               if (user != currentUser) {
+                  // To send private messages
+                  let private_message_btn = document.createElement("button");
+                  private_message_btn.textContent = "Message";
+                  private_message_btn.id = 'msg-user-btn';
+
+                  private_message_btn.addEventListener("click", () => {
+                     let private_msg_input = document.createElement("input");
+                     private_msg_input.type = "text";
+                     private_msg_input.placeholder = "Your message..."
+                     private_msg_input.id = "private-msg-input";
+
+                     let send_priv_msg = document.createElement("button");
+                     send_priv_msg.textContent = "Send";
+                     send_priv_msg.id = "send-priv-msg-btn";
+
+                     send_priv_msg.addEventListener("click", () => {
+                        let priv_msg = document.getElementById("private-msg-input").value;
+                        if (priv_msg.length == 0) {
+                           alert("Messages should have content!");
+                        } else {
+                           console.log("msg from " + currentUser + " to " + user);
+                           socketio.emit("private_msg", { receiver: user, sender: currentUser, message: priv_msg });
+                           document.getElementById("private-msg-input").remove();
+                           document.getElementById("send-priv-msg-btn").remove();
+                        }
+                     });
+
+                     private_message_btn.insertAdjacentElement("afterend", send_priv_msg);
+                     private_message_btn.insertAdjacentElement("afterend", private_msg_input);
+
+                  }, false);
+
+                  // Adding admin-specific interactions such as kick and ban
+                  if (admin) {
+                     let kick_btn = document.createElement("button");
+                     kick_btn.textContent = "Kick";
+                     kick_btn.id = 'kick-user-btn';
+
+                     kick_btn.addEventListener("click", () => {
+                        socketio.emit("kick_user_action", { user_kicked: user, room: currentRoom, room_admin: data['admin'] });
+                     }, false);
+
+                     let ban_btn = document.createElement("button");
+                     ban_btn.textContent = "Ban";
+                     ban_btn.id = 'ban-user-btn';
+
+                     ban_btn.addEventListener("click", () => {
+                        socketio.emit("ban_user_action", { user_banned: user, room: currentRoom, room_admin: data['admin'] });
+                     }, false);
+
+                     userBtn.insertAdjacentElement("afterend", ban_btn);
+                     userBtn.insertAdjacentElement("afterend", kick_btn);
+                  }
+
+                  // To block users
+                  let block_user_btn = document.createElement("button");
+                  block_user_btn.id = "block-user-btn";
+                  block_user_btn.textContent = "Block";
+
+                  block_user_btn.addEventListener("click", () => {
+                     blockedUsers.add(user);
+                     document.getElementById("block-user-btn").remove();
+                     document.getElementById("send-priv-msg-btn").remove();
+                  }, false);
+
+                  // To invite users to other rooms
+                  let invite_user_btn = document.createElement("button");
+                  invite_user_btn.id = "invite-user-btn";
+                  invite_user_btn.textContent = "Invite";
+
+                  invite_user_btn.addEventListener("click", () => {
+                     let room_name_input = document.createElement('input');
+                     room_name_input.id = "room-invite-input";
+                     room_name_input.type = 'text';
+                     room_name_input.placeholder = "Room name...";
+
+                     let send_inv_btn = document.createElement('button');
+                     send_inv_btn.textContent = "Send";
+                     send_inv_btn.id = "send-inv-btn";
+
+                     send_inv_btn.addEventListener("click", () => {
+                        let roomName = document.getElementById("room-invite-input").value;
+                        socketio.emit("send_room_invite", { receiver: user, sender: currentUser, room: roomName });
+                        console.log(user)
+                        document.getElementById("chatlog").prepend(document.createElement("hr"));
+                        document.getElementById("chatlog").prepend(document.createTextNode("Your invite to " + user + " has been sent."));
+                        removeActionButtons();
+                     }, false);
+
+                     invite_user_btn.insertAdjacentElement("afterend", send_inv_btn);
+                     invite_user_btn.insertAdjacentElement("afterend", room_name_input);
+                  }, false);
+
+                  userBtn.insertAdjacentElement("afterend", invite_user_btn);
+                  userBtn.insertAdjacentElement("afterend", block_user_btn);
+                  userBtn.insertAdjacentElement("afterend", private_message_btn);
+               }
+
+            }, false);
+
+            usersList.appendChild(userEntry);
+            userEntry.appendChild(userBtn);
+         }
+      });
+
+      // For modifying the list of the user that was kicked and sent back to main lobby
+      socketio.on("kicked_user_message", (data) => {
+         document.getElementById("chatlog").prepend(document.createElement("hr"));
+         document.getElementById("chatlog").prepend(document.createTextNode(data['message']));
+         currentRoom = "Main Lobby";
+
+         users = data['room_users'];
+         let usersList = document.getElementById("room-users-list");
+         usersList.innerHTML = "";
+         for (const user of users) {
+            let userEntry = document.createElement("li");
+            let userBtn = document.createElement("button");
+            userBtn.textContent = user;
+            userBtn.id = user;
+
+            if (user != currentUser) {
+               userBtn.addEventListener("click", () => {
+                  let private_message_btn = document.createElement("button");
+                  private_message_btn.textContent = "Message";
+                  private_message_btn.id = 'msg-user-btn';
+
+                  private_message_btn.addEventListener("click", () => {
+                     socketio.emit("private_msg", { receiver: user, sender: currentUser });
+                  }, false);
+
+                  // To block users
+                  let block_user_btn = document.createElement("button");
+                  block_user_btn.id = "block-user-btn";
+                  block_user_btn.textContent = "Block";
+
+                  block_user_btn.addEventListener("click", () => {
+                     blockedUsers.add(user);
+                     document.getElementById("block-user-btn").remove();
+                     document.getElementById("send-priv-msg-btn").remove();
+                  }, false);
+
+                  let invite_user_btn = document.createElement("button");
+                  invite_user_btn.id = "invite-user-btn";
+                  invite_user_btn.textContent = "Invite";
+
+                  invite_user_btn.addEventListener("click", () => {
+                     let room_name_input = document.createElement('input');
+                     room_name_input.id = "room-invite-input";
+                     room_name_input.type = 'text';
+                     room_name_input.placeholder = "Room name...";
+
+                     let send_inv_btn = document.createElement('button');
+                     send_inv_btn.textContent = "Send";
+                     send_inv_btn.id = "send-inv-btn";
+
+                     send_inv_btn.addEventListener("click", () => {
+                        let roomName = document.getElementById("room-invite-input").value;
+                        socketio.emit("send_room_invite", { receiver: user, sender: currentUser, room: roomName });
+                        console.log(user)
+                        document.getElementById("chatlog").prepend(document.createElement("hr"));
+                        document.getElementById("chatlog").prepend(document.createTextNode("Your invite to " + user + " has been sent."));
+                        removeActionButtons();
+                     }, false);
+
+                     invite_user_btn.insertAdjacentElement("afterend", send_inv_btn);
+                     invite_user_btn.insertAdjacentElement("afterend", room_name_input);
+                  }, false);
+                  userBtn.insertAdjacentElement("afterend", invite_user_btn);
+                  userBtn.insertAdjacentElement("afterend", block_user_btn);
+                  userBtn.insertAdjacentElement("afterend", private_message_btn);
+               }, false);
+            }
+            usersList.appendChild(userEntry);
+            userEntry.appendChild(userBtn);
+         }
+      });
+
+      // Adding a room to the rooms list upon its creation
+      socketio.on("create_room_message", function (data) {
+         document.getElementById("rooms-container").appendChild(document.createElement("hr"));
+         let roomBtn = document.getElementById("rooms-container").appendChild(document.createElement("button"));
+         roomBtn.textContent = data['message'];
+         roomBtn.id = data['message'];
+
+         roomBtn.addEventListener('click', () => {
+            if (currentRoom != roomBtn.textContent) {
+               socketio.emit("change-room", { newRoom: data['message'], currRoom: currentRoom, currRoomUsers: users });
+            }
+         }, false);
+      });
+
+      // Function to clear chat
+      function clearChat() {
+         document.getElementById("chatlog").innerHTML = '';
+      }
+
+      // Clearing chat of room upon admin's request
+      socketio.on("clear_chat_res", () => {
+         clearChat();
+      });
+
+      // On joining a room, a message is received by each socket indicating a new user has joined the room
+      // This results in an update to the Users List of that room
+      socketio.on("socket_joined_room", function (data) {
+         // Clearing chat when user joins new room
+         if (data['socket_joined'] == currentUser) {
+            clearChat();
+         }
+
+         removeActionButtons();
+
+         document.getElementById("chatlog").prepend(document.createElement("hr"));
+         document.getElementById("chatlog").prepend(document.createTextNode(data['message']));
+         currentRoom = data['room'];
+
+         // If current socket is admin, display admin room privileges as buttons
+         if (data['admin'] == currentUser) {
+            admin = true;
+
+            if (document.getElementById("clear-chat-btn") == undefined) {
+               let clear_chat_btn = document.createElement('button');
+               clear_chat_btn.textContent = 'Clear Chat';
+               clear_chat_btn.id = 'clear-chat-btn';
+
+               clear_chat_btn.addEventListener('click', () => {
+                  socketio.emit("clear_chat_req", { room: currentRoom });
+               }, false);
+
+               document.getElementById("send-message-btn").insertAdjacentElement("afterend", clear_chat_btn);
+            }
+
+         } else {
+            admin = false;
+            document.getElementById("clear-chat-btn")?.remove();
+
+         }
+
+         // Updating users list of socket's current room
+         users = data['room_users'];
+         let usersList = document.getElementById("room-users-list");
+         usersList.innerHTML = "";
+         for (const user of users) {
+            let userEntry = document.createElement("li");
+            let userBtn = document.createElement("button");
+            userBtn.textContent = user;
+            userBtn.id = user;
+
+            // Adding user interaction buttons for all users in room
+            userBtn.addEventListener("click", () => {
+               removeActionButtons();
+
+               if (user != currentUser) {
+                  // To send private messages
+                  let private_message_btn = document.createElement("button");
+                  private_message_btn.textContent = "Message";
+                  private_message_btn.id = 'msg-user-btn';
+
+                  private_message_btn.addEventListener("click", () => {
+                     let private_msg_input = document.createElement("input");
+                     private_msg_input.type = "text";
+                     private_msg_input.placeholder = "Your message..."
+                     private_msg_input.id = "private-msg-input";
+
+                     let send_priv_msg = document.createElement("button");
+                     send_priv_msg.textContent = "Send";
+                     send_priv_msg.id = "send-priv-msg-btn";
+
+                     send_priv_msg.addEventListener("click", () => {
+                        let priv_msg = document.getElementById("private-msg-input").value;
+                        if (priv_msg.length == 0) {
+                           alert("Messages should have content!");
+                        } else {
+                           console.log("msg from " + currentUser + " to " + user);
+                           socketio.emit("private_msg", { receiver: user, sender: currentUser, message: priv_msg });
+                           document.getElementById("private-msg-input").remove();
+                           document.getElementById("send-priv-msg-btn").remove();
+                        }
+                     });
+
+                     private_message_btn.insertAdjacentElement("afterend", send_priv_msg);
+                     private_message_btn.insertAdjacentElement("afterend", private_msg_input);
+
+                  }, false);
+
+                  // Adding admin-specific interactions such as kick and ban
+                  if (admin) {
+                     let kick_btn = document.createElement("button");
+                     kick_btn.textContent = "Kick";
+                     kick_btn.id = 'kick-user-btn';
+
+                     kick_btn.addEventListener("click", () => {
+                        socketio.emit("kick_user_action", { user_kicked: user, room: currentRoom, room_admin: data['admin'] });
+                     }, false);
+
+                     let ban_btn = document.createElement("button");
+                     ban_btn.textContent = "Ban";
+                     ban_btn.id = 'ban-user-btn';
+
+                     ban_btn.addEventListener("click", () => {
+                        socketio.emit("ban_user_action", { user_banned: user, room: currentRoom, room_admin: data['admin'] });
+                     }, false);
+
+                     userBtn.insertAdjacentElement("afterend", ban_btn);
+                     userBtn.insertAdjacentElement("afterend", kick_btn);
+                  }
+
+                  // To block users
+                  let block_user_btn = document.createElement("button");
+                  block_user_btn.id = "block-user-btn";
+                  block_user_btn.textContent = "Block";
+
+                  block_user_btn.addEventListener("click", () => {
+                     blockedUsers.add(user);
+                     document.getElementById("block-user-btn").remove();
+                     document.getElementById("send-priv-msg-btn").remove();
+                  }, false);
+
+                  // To invite users to other rooms
+                  let invite_user_btn = document.createElement("button");
+                  invite_user_btn.id = "invite-user-btn";
+                  invite_user_btn.textContent = "Invite";
+
+                  invite_user_btn.addEventListener("click", () => {
+                     let room_name_input = document.createElement('input');
+                     room_name_input.id = "room-invite-input";
+                     room_name_input.type = 'text';
+                     room_name_input.placeholder = "Room name...";
+
+                     let send_inv_btn = document.createElement('button');
+                     send_inv_btn.textContent = "Send";
+                     send_inv_btn.id = "send-inv-btn";
+
+                     send_inv_btn.addEventListener("click", () => {
+                        let roomName = document.getElementById("room-invite-input").value;
+                        socketio.emit("send_room_invite", { receiver: user, sender: currentUser, room: roomName });
+                        console.log(user)
+                        document.getElementById("chatlog").prepend(document.createElement("hr"));
+                        document.getElementById("chatlog").prepend(document.createTextNode("Your invite to " + user + " has been sent."));
+                        removeActionButtons();
+                     }, false);
+
+                     invite_user_btn.insertAdjacentElement("afterend", send_inv_btn);
+                     invite_user_btn.insertAdjacentElement("afterend", room_name_input);
+                  }, false);
+
+                  userBtn.insertAdjacentElement("afterend", invite_user_btn);
+                  userBtn.insertAdjacentElement("afterend", block_user_btn);
+                  userBtn.insertAdjacentElement("afterend", private_message_btn);
+               }
+
+            }, false);
+
+            usersList.appendChild(userEntry);
+            userEntry.appendChild(userBtn);
+         }
+      });
+
+      // For handling the case of a socket leaving a room
+      socketio.on("socket_left_room", (data) => {
+         // Clearing chat when user leaves old room
+         if (data['socket_left'] == currentUser) {
+            clearChat();
+         }
+
+         removeActionButtons();
+
+         document.getElementById("chatlog").prepend(document.createElement("hr"));
+         document.getElementById("chatlog").prepend(document.createTextNode(data['message']));
+
+         // Updating users list of socket's current room
+         users = data['room_users'];
+         let usersList = document.getElementById("room-users-list");
+         usersList.innerHTML = "";
+         for (const user of users) {
+            let userEntry = document.createElement("li");
+            let userBtn = document.createElement("button");
+            userBtn.textContent = user;
+            userBtn.id = user;
+
+            // Adding user interaction buttons for all users in room
+            userBtn.addEventListener("click", () => {
+               removeActionButtons();
+
+               if (user != currentUser) {
+                  // To send private messages
+                  let private_message_btn = document.createElement("button");
+                  private_message_btn.textContent = "Message";
+                  private_message_btn.id = 'msg-user-btn';
+
+                  private_message_btn.addEventListener("click", () => {
+                     let private_msg_input = document.createElement("input");
+                     private_msg_input.type = "text";
+                     private_msg_input.placeholder = "Your message..."
+                     private_msg_input.id = "private-msg-input";
+
+                     let send_priv_msg = document.createElement("button");
+                     send_priv_msg.textContent = "Send";
+                     send_priv_msg.id = "send-priv-msg-btn";
+
+                     send_priv_msg.addEventListener("click", () => {
+                        let priv_msg = document.getElementById("private-msg-input").value;
+                        if (priv_msg.length == 0) {
+                           alert("Messages should have content!");
+                        } else {
+                           console.log("msg from " + currentUser + " to " + user);
+                           socketio.emit("private_msg", { receiver: user, sender: currentUser, message: priv_msg });
+                           document.getElementById("private-msg-input").remove();
+                           document.getElementById("send-priv-msg-btn").remove();
+                        }
+                     });
+
+                     private_message_btn.insertAdjacentElement("afterend", send_priv_msg);
+                     private_message_btn.insertAdjacentElement("afterend", private_msg_input);
+
+                  }, false);
+
+                  // Adding admin-specific interactions such as kick and ban
+                  if (admin) {
+                     let kick_btn = document.createElement("button");
+                     kick_btn.textContent = "Kick";
+                     kick_btn.id = 'kick-user-btn';
+
+                     kick_btn.addEventListener("click", () => {
+                        socketio.emit("kick_user_action", { user_kicked: user, room: currentRoom });
+                     }, false);
+
+                     let ban_btn = document.createElement("button");
+                     ban_btn.textContent = "Ban";
+                     ban_btn.id = 'ban-user-btn';
+
+                     ban_btn.addEventListener("click", () => {
+                        socketio.emit("ban_user_action", { user_banned: user, room: currentRoom });
+                     }, false);
+
+                     userBtn.insertAdjacentElement("afterend", ban_btn);
+                     userBtn.insertAdjacentElement("afterend", kick_btn);
+                  }
+
+                  // To block users
+                  let block_user_btn = document.createElement("button");
+                  block_user_btn.id = "block-user-btn";
+                  block_user_btn.textContent = "Block";
+
+                  block_user_btn.addEventListener("click", () => {
+                     blockedUsers.add(user);
+                     document.getElementById("block-user-btn").remove();
+                     document.getElementById("send-priv-msg-btn").remove();
+                  }, false);
+
+                  // To invite users to other rooms
+                  let invite_user_btn = document.createElement("button");
+                  invite_user_btn.id = "invite-user-btn";
+                  invite_user_btn.textContent = "Invite";
+
+                  invite_user_btn.addEventListener("click", () => {
+                     let room_name_input = document.createElement('input');
+                     room_name_input.id = "room-invite-input";
+                     room_name_input.type = 'text';
+                     room_name_input.placeholder = "Room name...";
+
+                     let send_inv_btn = document.createElement('button');
+                     send_inv_btn.textContent = "Send";
+                     send_inv_btn.id = "send-inv-btn";
+
+                     send_inv_btn.addEventListener("click", () => {
+                        let roomName = document.getElementById("room-invite-input").value;
+                        socketio.emit("send_room_invite", { receiver: user, sender: currentUser, room: roomName });
+                        console.log(user)
+                        document.getElementById("chatlog").prepend(document.createElement("hr"));
+                        document.getElementById("chatlog").prepend(document.createTextNode("Your invite to " + user + " has been sent."));
+                        removeActionButtons();
+                     }, false);
+
+                     invite_user_btn.insertAdjacentElement("afterend", send_inv_btn);
+                     invite_user_btn.insertAdjacentElement("afterend", room_name_input);
+                  }, false);
+
+                  userBtn.insertAdjacentElement("afterend", invite_user_btn);
+                  userBtn.insertAdjacentElement("afterend", block_user_btn);
+                  userBtn.insertAdjacentElement("afterend", private_message_btn);
+               }
+
+            }, false);
+
+            usersList.appendChild(userEntry);
+            userEntry.appendChild(userBtn);
+         }
+      });
+
+      // Displaying a room invite in the invited's chat log
+      socketio.on("room_invite_received", (data) => {
+         console.log("room invite received");
+         document.getElementById("chatlog").prepend(document.createElement("hr"));
+         document.getElementById("chatlog").prepend(document.createTextNode(data['message']))
+
+         let join_invite_btn = document.createElement("button");
+         join_invite_btn.textContent = 'Join';
+         join_invite_btn.id = 'join-inv-btn';
+
+         join_invite_btn.addEventListener("click", () => {
+            socketio.emit("change-room", { newRoom: data['room_name'], currRoom: currentRoom, currRoomUsers: users });
+         }, false);
+
+         document.getElementById("chatlog").prepend(join_invite_btn);
+
+      });
+
+      // For removing user interaction buttons
+      function removeActionButtons() {
+         document.getElementById("password-opt").checked = false;
+         document.getElementById("password-input")?.remove();
+         document.getElementById("room-pwd-input")?.remove();
+         document.getElementById("join-pwd-room")?.remove();
+         document.getElementById("msg-user-btn")?.remove();
+         document.getElementById("kick-user-btn")?.remove();
+         document.getElementById("ban-user-btn")?.remove();
+         document.getElementById("private-msg-input")?.remove();
+         document.getElementById("send-priv-msg-btn")?.remove();
+         document.getElementById("block-user-btn")?.remove();
+         document.getElementById("room-invite-input")?.remove();
+         document.getElementById("send-inv-btn")?.remove();
+         document.getElementById("invite-user-btn")?.remove();
+      }
+
+      // For acquiring the password for a password protected room
+      socketio.on("get_room_password", (data) => {
+         alert(data['room'] + " requires a password to be joined!")
+
+         let room = document.getElementById(data['room']);
+
+         let room_pwd_input = document.createElement('input');
+         room_pwd_input.id = "room-pwd-input";
+         room_pwd_input.type = 'password';
+
+         let join_room_btn = document.createElement('button');
+         join_room_btn.textContent = "Join Room";
+         join_room_btn.id = "join-pwd-room";
+
+         join_room_btn.addEventListener("click", () => {
+            let userPwd = document.getElementById("room-pwd-input").value;
+
+            console.log("In get room password: " + data['room']);
+
+            socketio.emit("change-room", { newRoom: data['room'], roomPwd: userPwd, currRoom: currentRoom, currRoomUsers: users });
+            document.getElementById("room-pwd-input").remove();
+            document.getElementById("join-pwd-room").remove();
+         }, false);
+
+         room.insertAdjacentElement("afterend", room_pwd_input);
+         document.getElementById("room-pwd-input").insertAdjacentElement("afterend", join_room_btn);
+      });
+
+      // For notifying the user that their password was incorrect
+      socketio.on("wrong_room_password", () => {
+         alert("the password you have entered is incorrect");
+      })
+
+      // Function of send message button
+      function sendMessage() {
+         var msg = document.getElementById("message_input").value;
+         socketio.emit("message_to_server", { message: msg, currRoom: currentRoom });
+         console.log(users);
+         document.getElementById("message_input").value = "";
+      }
+
+      // Function of create room button
+      function createRoom() {
+         let roomname = document.getElementById("room_name").value;
+         let isChecked = document.getElementById("password-opt").checked;
+         console.log("create-room-pressed");
+         if (isChecked) {
+            let room_pwd = document.getElementById("password-input").value;
+
+            if (room_pwd.length < 6) {
+               alert("Room passwords must be at least 6 characters in length");
+               document.getElementById("password-input").value = "";
+               return;
+            } else {
+               socketio.emit("create-room", { room: roomname, pwd: room_pwd });
+               document.getElementById("room_name").value = "";
+            }
+         } else {
+            socketio.emit("create-room", { room: roomname });
+            document.getElementById("room_name").value = "";
+         }
+         removeActionButtons();
+      }
+
+   </script>
+</head>
+
+<body>
+
+   <!-- Sign on page -->
+   <div id="join-page-container" class="join-page-container">
+      <form id="join-page-form" class="join-page">
+         <h1>Enter a Nickname!</h1>
+         <br>
+         <input type="text" placeholder="Your nickname..." id="nickname-input">
+         <input type="submit" id="enter-chatroom-btn" value="Join Chatroom">
+      </form>
+   </div>
+
+   <!-- Chatroom page -->
+   <div id="chatroom" class="chatroom-page">
+      <div id="rooms-container">
+         <h1>Rooms</h1>
+         <div id="create-room-container">
+            <input type="text" id="room_name" />
+            <br>
+            <label for="password-opt">Password Protected</label>
+            <input type="checkbox" id="password-opt">
+            <button onclick="createRoom()">create room</button>
+         </div>
+      </div>
+      <div id="users-container">
+         <h1>Users</h1>
+         <ul id="room-users-list"></ul>
+      </div>
+      <div id="chat-container">
+         <h1 id="chat-header">Chatlog</h1>
+         <input type="text" id="message_input" />
+         <button id="send-message-btn" onclick="sendMessage()">send</button>
+         <div id="chatlog"></div>
+      </div>
+   </div>
+
+   <script>
+
+      // For joining a room when join button on landing page clicked
+      document.getElementById("enter-chatroom-btn").addEventListener("click", (event) => {
+         event.preventDefault();
+         let nickname = document.getElementById("nickname-input").value;
+
+         // If username is less than 1 character in length, reprompt for username
+         if (nickname.length == 0) {
+            let join_page = document.getElementById("join-page-form");
+
+            // If error message already displayed, DO NOT display again
+            if ((join_page.textContent).indexOf("Please enter a nickname") == -1) {
+               const enter_nickname_msg = document.createElement("h2");
+               enter_nickname_msg.textContent = "Please enter a nickname in order to join the chatroom";
+               document.getElementById("join-page-form").appendChild(enter_nickname_msg);
+            }
+         } else {
+
+            // On signing in with a nickname, display the chat page
+            currentUser = nickname;
+            socketio.emit("verify_username", { username: nickname });
+         }
+      }, false);
+
+      // For notifying a user that the username they have entered is taken
+      socketio.on("nickname_taken", (data) => {
+         if (data['taken']) {
+            console.log(data['username']);
+            alert("The nickname you have entered is already in use. Please try a different name.");
+         } else {
+            socketio.emit("user_joined_message", { username: data['username'] });
+
+            let join_page = document.getElementById("join-page-container");
+            let chatroom = document.getElementById("chatroom");
+            join_page.classList.add("hide");
+            chatroom.classList.add("show");
+
+            // Adds main lobby button to page before placing user into main lobby
+            document.getElementById("rooms-container").appendChild(document.createElement("hr"));
+            let roomBtn = document.getElementById("rooms-container").appendChild(document.createElement("button"));
+            roomBtn.textContent = "Main Lobby";
+            roomBtn.id = "Main Lobby";
+
+            // If main lobby button clicked, take user to main lobby and set main lobby as their current room
+            roomBtn.addEventListener("click", () => {
+               if (currentRoom != "Main Lobby") {
+                  socketio.emit("change-room", { newRoom: "Main Lobby", currRoom: currentRoom, currRoomUsers: users });
+                  currentRoom = "Main Lobby";
+               }
+            });
+
+            // Upon first logging in, put the user into the main lobby
+            socketio.emit("change-room", { newRoom: "Main Lobby", currRoom: currentRoom, currRoomUsers: users });
+            currentRoom = "Main Lobby";
+         }
+      });
+
+      //   If user selects to have a password protected room, then display password input
+      document.getElementById("password-opt").addEventListener("change", () => {
+         let isChecked = document.getElementById("password-opt").checked;
+         let create_form = document.getElementById("create-room-container");
+
+         if (isChecked) {
+            let password_input = document.createElement("input");
+            password_input.type = 'password';
+            password_input.placeholder = 'Your password...';
+            password_input.id = 'password-input';
+            create_form.appendChild(password_input);
+         } else {
+            let password_input = document.getElementById("password-input");
+            create_form.removeChild(password_input);
+         }
+      }, false);
+
+   </script>
+</body>
+
+</html>

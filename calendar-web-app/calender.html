@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="calender.css">
+    <title>Document</title>
+</head>
+<body id="body">
+    <!-- LOGIN FORM MODAL -->
+    <div class="login-container" id="login-body">
+        <div class="login-form-container">
+            <h1 class="header-text">CALENDAR APP</h1>
+            <h3>Please Login</h3>
+            <!-- Login form -->
+            <form method="post">
+                <label class="form-label" for="username">Username</label>
+                <input class="login-input" type="text" name="username" id="username">
+                <br>
+                <label class="form-label" for="password">Password</label>
+                <input class="login-input" type="password" name="password" id="password">
+                <br>
+                <input class="login-form-btn" type="submit" id="login-btn" value="Login">
+            </form>
+        </div>
+        <div class="other-opt-container">
+            <!-- Account Registration Option -->
+            <form class="other-opt-form" method="post">
+                <label class="other-opt-label" for="register-btn">New User?</label>
+                <input class="login-form-btn" type="submit" name="register-btn" id="register-btn" value="Register">
+            </form>
+            <!-- View as Guest Option -->
+            <form class="other-opt-form" method="post">
+                <label class="other-opt-label" for="guest-view-btn">Continue as</label>
+                <input class="login-form-btn" type="submit" name="guest-view-btn" id="guest-view-btn" value="Guest">
+            </form>
+        </div>
+
+        <script>
+            // Array of currently-logged-in-user's events
+            let user_events = []
+
+            // ID of currently-logged-in user
+            let current_user = null;
+
+            // Checks if user-session is still active so that page refresh does not logout
+            function getSession() {
+                const action = "get-session";
+                const data = { "action": action };
+
+                fetch("login-actions.php", {
+                    method: "POST",
+                    data: JSON.stringify(data),
+                    headers: { "content-type": "application/json" }
+                })
+                .then(res => res.json())
+                .then(response => {
+                    if (response.success) {
+                        document.getElementById("login-body").classList.add("hide");
+                        document.getElementById("calendar-body").classList.add("show");
+                    } else {
+                        return;
+                    }
+                })
+                .catch(err => console.error(err));
+            }   
+
+            // Call to check if session already active
+            getSession();
+
+            // Logs user in if valid credentials entered into login form upon login button click
+            function login(event) {
+                event.preventDefault();
+                const username = document.getElementById("username").value; 
+                const password = document.getElementById("password").value; 
+                const action = 'login';
+                const data = { 'username': username, 'password': password, 'action': action};
+    
+                fetch("login-actions.php", {
+                        method: 'POST',
+                        body: JSON.stringify(data),
+                        headers: { 'content-type': 'application/json' }
+                    })
+                    .then(res => res.json())
+                    .then(response => {
+                        if (response.success) {
+                            document.getElementById("login-body").classList.add("hide");
+                            document.getElementById("calendar-body").classList.add("show");
+                            user_events = []
+                            current_user = response.current_user;
+                            updateCalendar();
+                        } else {
+                            alert("Error logging in: " , response.message);
+                        }
+                    }) 
+                    .catch(err => console.error(err));
+            }
+    
+            // Redirects user to registration form on register button click
+            function register(event) {
+                event.preventDefault();
+                const action = 'register-redirect';
+                const data = { 'action': action };
+    
+                fetch("login-actions.php", {
+                        method: 'POST',
+                        body: JSON.stringify(data),
+                        headers: { 'content-type': 'application/json' }
+                    })
+                    .then(res => res.json())
+                    .then(response => {
+                        if (response.success) {
+                            document.getElementById("login-body").classList.add("hide");
+                            document.getElementById("register-body").classList.add("show");
+                        } else {
+                            alert("Error occurred while redirecting to register page");
+                        }
+                    })
+                    .catch(err => console.error(err));
+            }
+    
+            // Allows user to view calendar as a guest on guest-view button click
+            function view_as_guest(event) {
+                event.preventDefault();
+                const action = 'guest-view';
+                const data = { 'action': action };
+    
+                fetch("login-actions.php", {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                    headers: { 'content-type': 'application/json' }
+                })
+                .then(res => res.json())
+                .then(response => {
+                    if (response.success) {
+                        document.getElementById("login-body").classList.add("hide");
+                        document.getElementById("calendar-body").classList.add("show");
+                        user_events = [];
+                        updateCalendar();
+                    } else {
+                        alert("An error occurred while attempting to view as guest");
+                    }
+                })
+                .catch(err => console.error(err));
+            }
+    
+            // Event listener for login button on login page modal
+            document.getElementById("login-btn").addEventListener("click", login, false);
+
+            // Event listener for register button on login page modal
+            document.getElementById("register-btn").addEventListener("click", register, false);
+
+            // Event listener for guest-view button on login page modal
+            document.getElementById("guest-view-btn").addEventListener("click", view_as_guest, false);
+        </script>
+    </div>
+
+    <!-- REGISTER ACCOUNT FORM MODAL -->
+    <div class="register-body" id="register-body">
+        <div class="login-form-container">
+            <h1 class="header-text">CALENDAR APP</h1>
+            <div class="login-container">
+                <h3 class="body-title">Create an Account</h3>
+                <div class='registration-form'>
+                    <!-- Registration form -->
+                    <form class='edit-story-form' method="post">
+                        <label for="reg-username">Username</label>
+                        <input class="login-input" type="text" name="username" id="reg-username" minlength="6">
+                        <br>
+                        <label for="email">Email Address</label>
+                        <input class="login-input" type="email" name="email" id="email" minlength="6">
+                        <br>
+                        <label for="reg-password">Password</label>
+                        <input class="login-input" type="password" name="password" id="reg-password" minlength="10" pattern="[A-Za-z0-9]{8,}">
+                        <br>
+                        <label for="confirm-reg-password">Confirm Password</label>
+                        <input class="login-input" type="password" name="confirm-password" id="confirm-reg-password" minlength="10" pattern="[A-Za-z0-9]{8,}"> 
+                        <br>
+                        <h5>Passwords should contain an uppercase letter, a lowercase letter, and a number. </h5>
+                        <input class="action-btn" type="submit" id="register" value="Register"><br>
+                    </form>
+                </div>
+            </div>
+            <!-- Login redirect form -->
+            <form method="post">
+                <label class="other-opt-label" for="login-redirect">Already a User?</label>
+                <input class="action-btn" type="submit" id="login-redirect" value="Login">
+            </form>
+        </div>
+        <script>
+
+            // Registers user account using valid registration form inputs upon register button click
+            function registerUser(event) {
+                event.preventDefault();
+    
+                const username = document.getElementById('reg-username').value;
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('reg-password').value;
+                const confirm_password = document.getElementById('confirm-reg-password').value;
+                const action = 'register';
+                const data = { 'username': username, 'email': email, 'password': password, 'confirm-password': confirm_password, 'action': action };
+    
+                fetch("login-actions.php", {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                    headers: { 'content-type': 'application/json' }
+                })
+                .then(res => res.json())
+                .then(response => {
+                    (response.success ? alert("Successfully registered user") : alert("Error occurred when trying to register user ", response.message));
+                })
+                .catch(err => console.error(err));
+            }
+
+            // Redirects user to login form upon login button click
+            function loginUser(event) {
+                event.preventDefault();
+    
+                const action = 'login-redirect';
+                const data = { 'action': action }
+    
+                fetch("login-actions.php", {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                    headers: { 'content-type': 'application/json' }
+                })
+                .then(res => res.json())
+                .then(response => {
+                        if (response.success) {
+                            document.getElementById("register-body").classList.remove("show");
+                            document.getElementById("login-body").classList.remove("hide");
+                        } else {
+                            alert("Error logging in: " , response.message);
+                        }
+                    })
+                .catch(err => console.error(err));
+            }
+
+            // Event listener for register button click
+            document.getElementById('register').addEventListener("click", registerUser, false);
+
+            // Event listener for login button click
+            document.getElementById('login-redirect').addEventListener("click", loginUser, false);
+        </script>
+    </div>
+
+    <!-- CALENDAR MODAL -->
+    <div class="calendar-body" id="calendar-body">
+
+        <!-- Calendar actions -->
+        <div class="month-container">
+            <div class="actions-container">
+                <button class="action-btn" id="new-event-btn">+ New Event</button>
+                <button class="action-btn" id="share-calender-btn">Share Calender</button>
+            </div>
+            <div class="month-container">
+                <button class="change-month-btn" id="prev_month_btn">&lt;</button>
+                <h1 id="month"></h1>
+                <button class="change-month-btn" id="next_month_btn">&gt;</button>
+            </div>
+            <div class="actions-container">
+                <button class="action-btn" id="logout-btn">Logout</button>
+            </div>
+        </div>
+
+        <!-- Add-event form and modal -->
+        <div class="modal-container" id="add-event-modal">
+            <div class="modal">
+                <h1 class="new-event-header">New Event</h1>
+                <form class="new-event-form">
+                    <table class="new-event-table">
+                        <colgroup>
+                            <col class="name-col">
+                            <col class="input-col">
+                            <col class="name-col">
+                            <col class="input-col">
+                        </colgroup>
+                        <!-- New event title -->
+                        <tr class="form-row">
+                            <td class="form-data-label">Title</td>
+                            <td colspan="3" class="form-data"><input class="event-title-input" type="text" id="event-title" placeholder="Title your event..."></td>
+                        </tr>
+                        <!-- New event date and time -->
+                        <tr class="form-row">
+                            <td class="form-data-label">Date</td>
+                            <td class="form-data"><input class="event-date-input" type="date" id="event-date"></td>
+                            <td class="form-data-label">Time</td>
+                            <td class="form-data"><input class="event-time-input" type="time" id="event-time" value="00:00" step="900"></td>
+                        </tr>
+                        <!-- New event tag and color selection -->
+                        <tr class="form-row">
+                            <td class="form-data-label">Tag</td>
+                            <td class="form-data">
+                                <select class="tag-select" id="event-tag">
+                                    <option value="None">&nbsp;</option>
+                                    <option value="School">School</option>
+                                    <option value="Work">Work</option>
+                                    <option value="Hangout">Hangout</option>
+                                    <option value="Appointment">Appointment</option>
+                                    <option value="Meeting">Meeting</option>
+                                    <option value="Workout">Workout</option>
+                                </select>
+                            </td>
+                            <td class="form-data-label">Color</td>
+                            <td class="form-data">
+                                <select class="color-select" id="event-color">
+                                    <option value="rgba(201,17,0,0.3)">Red</option>
+                                    <option value="rgba(9,140,7,0.3)">Green</option>
+                                    <option value="rgba(0,97,201,0.3)">Blue</option>
+                                    <option value="rgba(222,129,7,0.3)">Orange</option>
+                                    <option value="rgba(123,8,168,0.3)">Purple</option>
+                                    <option value="rgba(214,214,11,0.3)">Yellow</option>
+                                    <option value="rgba(84,59,63,0.3)">Brown</option>
+                                    <option value="rgba(105,102,103,0.3)">Grey</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <!-- New event group-event checkbox -->
+                        <tr>
+                            <td class="form-data-label">Group Event?</td>
+                            <td class="form-data"><input type="checkbox" class="group-event-checkbox" id="group-event-selector"></td>
+                            <td colspan="2"></td>
+                        </tr>
+                    </table>
+                </form>
+
+                <!-- Group member search -->
+                <div class="group-list-container" id="group-list-container">
+                    <table class="group-member-search-container" id="group-member-search-container">
+                        <colgroup>
+                            <col class="search-label-col">
+                            <col class="group-user-input-col">
+                            <col class="add-user-btn-col">
+                        </colgroup>
+                        <tr>
+                            <td class="group-input-cell">Search for Users</td>
+                            <td class="group-input-cell">
+                                <input type="text" class="event-title-input" id="group-member-username" placeholder="Username...">
+                            </td>
+                            <td class="group-input-cell">
+                                <button class="action-btn" id="add-group-member-btn">Add</button>
+                            </td>
+                        </tr>
+                    </table>
+                    <!-- List of user-selected group members -->
+                    <h2 class="group-list-title">Group members: </h2>
+                    <ul class="group-member-list" id="group-member-list"></ul>
+                </div>
+                <!-- Modal close and save actions -->
+                <div class="new-event-modal-actions">
+                    <button class="action-btn" id="close-modal-btn">Close</button>
+                    <button class="action-btn" id="save-event-btn">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- View/edit event modal -->
+        <div class="modal-container" id="view-event-modal">
+            <div class="modal">
+                <div class="modal-header">
+                    <div class="modal-act-btn">
+                        <h2 class="hidden-info" id="view-event-id"></h2>
+                    </div>
+                    <div class="modal-header-text" id="ve-header-text">
+                        <h1>View Event</h1>
+                        <h2 id="event-type-header"></h2>
+                    </div>
+                    <!-- Modal header title and close option -->
+                    <div class="modal-act-btn" id="ve-modal-header-act">
+                        <button class="exit-btn" id="exit-ve-modal-btn">X</button>
+                    </div>
+                </div>
+                <!-- Form for editing event information -->
+                <form class="new-event-form">
+                    <table class="new-event-table">
+                        <colgroup>
+                            <col class="name-col">
+                            <col class="input-col">
+                            <col class="name-col">
+                            <col class="input-col">
+                        </colgroup>
+                        <tr class="form-row">
+                            <td class="form-data-label">Title</td>
+                            <td colspan="3" class="form-data"><input class="event-title-input" type="text" id="view-event-title"></td>
+                        </tr>
+                        <tr class="form-row">
+                            <td class="form-data-label">Date</td>
+                            <td class="form-data"><input class="event-date-input" type="date" id="view-event-date"></td>
+                            <td class="form-data-label">Time</td>
+                            <td class="form-data"><input class="event-time-input" type="time" id="view-event-time" value="00:00" step="900"></td>
+                        </tr>
+                        <tr class="form-row">
+                            <td class="form-data-label">Tag</td>
+                            <td class="form-tag-data">
+                                <select class="tag-select" id="view-event-tag">
+                                    <option value="None">&nbsp;</option>
+                                    <option value="School">School</option>
+                                    <option value="Work">Work</option>
+                                    <option value="Hangout">Hangout</option>
+                                    <option value="Appointment">Appointment</option>
+                                    <option value="Meeting">Meeting</option>
+                                    <option value="Workout">Workout</option>
+                                </select>
+                            </td>
+                            <td class="form-data-label">Color</td>
+                            <td class="form-tag-data">
+                                <select class="color-select" id="view-event-color">
+                                    <option value="rgba(201,17,0,0.3)">Red</option>
+                                    <option value="rgba(9,140,7,0.3)">Green</option>
+                                    <option value="rgba(0,97,201,0.3)">Blue</option>
+                                    <option value="rgba(222,129,7,0.3)">Orange</option>
+                                    <option value="rgba(123,8,168,0.3)">Purple</option>
+                                    <option value="rgba(214,214,11,0.3)">Yellow</option>
+                                    <option value="rgba(84,59,63,0.3)">Brown</option>
+                                    <option value="rgba(105,102,103,0.3)">Grey</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+                <!-- Modal event-delete and save actions -->
+                <div class="new-event-modal-actions">
+                    <button class="action-btn" id="delete-event-btn">Delete</button>
+                    <button class="action-btn" id="update-event-btn">Update</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Share calendar modal and form -->
+        <div class="modal-container" id="share-calendar-modal">
+            <div class="modal">
+                <div class="modal-header">
+                    <div class="modal-act-btn">
+                    </div>
+                    <div class="modal-header-text" id="sc-header-text">
+                        <h1>Share Calendar</h1>
+                    </div>
+                    <div class="modal-act-btn" id="sc-modal-header-act">
+                        <button class="exit-btn" id="exit-sc-modal-btn">X</button>
+                    </div>
+                </div>
+                <!-- Form for selecting users to share calendar with -->
+                <form class="share-calendar-form">
+                    <table class="share-calendar-table">
+                        <colgroup>
+                            <col class="label-col">
+                            <col class="username-input-col">
+                        </colgroup>
+                        <tr class="form-row">
+                            <td class="form-data-label">Receiver Username</td>
+                            <td class="form-data"> <input class="event-title-input" type="text" id="receiver-username" placeholder="Username..."> </td>
+                        </tr>
+                    </table>
+                </form>
+                <!-- Modal share action -->
+                <div class="sc-modal-actions">
+                    <button class="action-btn" id="confirm-share-calendar-btn">Share</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty calendar table -->
+        <table class="calender-table">
+            <thead>
+                <tr>
+                    <th>
+                        Sunday
+                    </th>
+                    <th>
+                        Monday
+                    </th>
+                    <th>
+                        Tuesday
+                    </th>
+                    <th>
+                        Wednesday
+                    </th>
+                    <th>
+                        Thursday
+                    </th>
+                    <th>
+                        Friday
+                    </th>
+                    <th>
+                        Saturday
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="weeks">
+            </tbody>
+        </table>
+
+        <script>
+
+            /***** FORMAT CALENDAR DATA *****/
+
+            // Acquire days for week
+            (function() {
+                Date.prototype.deltaDays = function(c) {
+                    return new Date(this.getFullYear(), this.getMonth(),this.getDate()+c)
+                };
+                
+                Date.prototype.getSunday = function() {
+                    return this.deltaDays(-1 * this.getDay())
+                }
+            }
+            )();
+
+            // Acquire weeks for month
+            function Week(c) {
+                this.sunday = c.getSunday();
+                this.nextWeek = function() {
+                    return new Week(this.sunday.deltaDays(7))
+                };
+                this.prevWeek = function() {
+                    return new Week(this.sunday.deltaDays(-7))
+                };
+                this.contains = function(b) {
+                    return this.sunday.valueOf() === b.getSunday().valueOf()
+                };
+                this.getDates = function() {
+                    for(var b=[],a=0;7>a;a++) b.push(this.sunday.deltaDays(a)); return b}}
+
+            // Acquire months for year
+            function Month(c,b) {
+                this.year = c;
+                this.month = b;
+                this.nextMonth = function() {
+                    return new Month(c+Math.floor((b + 1) / 12),(b + 1) % 12)
+                };
+                this.prevMonth = function() {
+                    return new Month(c+Math.floor((b-1)/12),(b+11)%12)
+                };
+                this.getDateObject = function(a) {
+                    return new Date(this.year, this.month, a)
+                };
+                this.getWeeks = function() {
+                    var a=this.getDateObject(1),b = this.nextMonth().getDateObject(0),c = [],a = new Week(a);
+                    for(c.push(a); !a.contains(b);) a = a.nextWeek(), c.push(a); return c}};
+
+            // Current month (March 2025)
+            let currentMonth = new Month(2025, 2);
+
+            // Change the month when the ">" button is pressed
+            document.getElementById("next_month_btn").addEventListener("click", function(event){
+                currentMonth = currentMonth.nextMonth(); 
+                user_events = []; // Need to reset user_events so that calendar updates for next month's events
+                updateCalendar(); // Whenever the month is updated, we'll need to re-render the calendar in HTML
+            }, false);
+
+            // Change the month when "<" button is pressed
+            document.getElementById("prev_month_btn").addEventListener("click", function(event){
+                currentMonth = currentMonth.prevMonth(); // Previous month would be currentMonth.prevMonth()
+                user_events = [];
+                updateCalendar(); 
+            }, false);
+
+
+            /***** UPDATE CALENDAR/DISPLAY EVENTS *****/
+
+            // Array of month names in order
+            const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+            // Token of currently-logged-in user
+            let token_value = "";
+
+             // Function to decode string encoded in server-side with htmlentities()
+             function decodeHtml(html) {
+                let doc = new DOMParser().parseFromString(html, "text/html");
+                return doc.body.textContent;
+            }
+
+            // Gets events associated with current user 
+            function getUserEvents () {
+                const action = "get-user-events";
+                const data = { "action": action };
+
+                return fetch("calender-actions.php", {
+                    method: "POST",
+                    body: JSON.stringify(data),
+                    headers: { "content-type" : "application/json"}
+                })
+                .then(res => res.json())
+                .then(response => {
+                    if (response.success) {
+                        token_value = response.token;
+                        return response.data;
+                    } else {
+                        console.error(response.message);
+                        return null;
+                    }
+                })
+                .catch(err => console.error(err));
+            }
+
+            // Function to display user events in calendar table
+            function insertEvents(currDate) {
+                let day_events = user_events.filter((event) => event[2] == currDate);
+                // Create new <li> tag for each element
+                if (day_events.length > 0) {
+                    day_events.forEach(event => {
+                        document.getElementById("events-list-" + event[2]).innerHTML += "<li class='event-entry' id='event-" + event[2] + "-" + event[0] + 
+                            "'><button class='event-btn' name='btn' id='event-btn-" + event[2] + "-" + event[0] + "' data-id='" + event[0] + "'' data-title='" + decodeHtml(event[1]) + "' data-date='" + event[2] + "' data-time='" + event[3] + 
+                            "' data-tag='" + event[4] + "' data-color='" + event[5] + "' data-event_type = '" + event[6] + "'>" + decodeHtml(event[1]) + "</button></li>"; 
+                        document.getElementById("event-" + event[2] + "-" + event[0]).style.backgroundColor = event[5];
+                    });
+                }
+            }
+
+            // Changes/updates month based on user-action
+            async function updateCalendar(){
+                document.getElementById("weeks").innerHTML = "";
+                var weeks = currentMonth.getWeeks();
+
+                // Index to differentiate weeks
+                let week_index = 0;
+
+                // Loads user events if empty
+                if (user_events.length == 0) {
+                    const events = await getUserEvents();
+                    user_events.push(...events);
+                }
+
+                // String representation of current month
+                let stringMonth = months[currentMonth.month];
+
+                // Header on calendar with current month/year
+                document.getElementById("month").textContent = stringMonth + " " + currentMonth.year;
+
+                // Iterate through weeks of month and display events
+                for(var w in weeks){
+                    var days = weeks[w].getDates();
+                    document.getElementById("weeks").innerHTML += "<tr id='week-" + week_index + "'></tr>";
+                    // Iterate through days of week
+                    for(var d in days){
+                        // The date of the current day
+                        let currDate = days[d].getFullYear() + "-" + ("0" + (days[d].getMonth() + 1)).slice(-2) + "-" + ("0" + days[d].getDate()).slice(-2);
+
+                        // Check if day is in current month for different displays
+                        if (days[d].getMonth() == currentMonth.month) {
+                            if (days[d].getDate() == 1) {
+                                document.getElementById("week-" + week_index).innerHTML += "<td id='day-" + (currentMonth.month + 1) + "-" + days[d].getDate() + "-" + currentMonth.year + "'>" + (months[days[d].getMonth()]).substring(0, 3) + " " + days[d].getDate() + "</td>";
+                                document.getElementById("day-" + (currentMonth.month + 1) + "-" + days[d].getDate() + "-" + currentMonth.year).innerHTML += "<br><ul class='day-event-list' id='events-list-" + currentMonth.year + "-" + ("0" + (currentMonth.month + 1)).slice(-2) + "-" + ("0" + days[d].getDate()).slice(-2) + "'></ul>";
+                                insertEvents(currDate);
+                            } else {
+                                document.getElementById("week-" + week_index).innerHTML += "<td id='day-" + (currentMonth.month + 1) + "-" + days[d].getDate() + "-" + currentMonth.year + "'>" + days[d].getDate() + "</td>";
+                                document.getElementById("day-" + (currentMonth.month + 1) + "-" + days[d].getDate() + "-" + currentMonth.year).innerHTML += "<br><ul class='day-event-list' id='events-list-" + currentMonth.year + "-" + ("0" + (currentMonth.month + 1)).slice(-2) + "-" + ("0" + days[d].getDate()).slice(-2) + "'></ul>";
+                                insertEvents(currDate);
+                            }
+                        } else {
+                            if (days[d].getDate() == 1) {
+                                document.getElementById("week-" + week_index).innerHTML += "<td class='diff-month' id='day-" + (days[d].getMonth() + 1) + "-" + days[d].getDate() + "-" + days[d].getFullYear() + "'>" + (months[days[d].getMonth()]).substring(0, 3) + " " + days[d].getDate() + "</td>";
+                                document.getElementById("day-" + (days[d].getMonth() + 1) + "-" + days[d].getDate() + "-" + days[d].getFullYear()).innerHTML += "<br><ul class='day-event-list' id='events-list-" + days[d].getFullYear() + "-" + ("0" + (days[d].getMonth() + 1)).slice(-2) + "-" + ("0" + days[d].getDate()).slice(-2) + "'></ul>";
+                                insertEvents(currDate);
+                            } else {
+                                document.getElementById("week-" + week_index).innerHTML += "<td class='diff-month' id='day-" + (days[d].getMonth() + 1) + "-" + days[d].getDate() + "-" + days[d].getFullYear() + "'>" + days[d].getDate() + "</td>";
+                                document.getElementById("day-" + (days[d].getMonth() + 1) + "-" + days[d].getDate() + "-" + days[d].getFullYear()).innerHTML += "<br><ul class='day-event-list' id='events-list-" + days[d].getFullYear() + "-" + ("0" + (days[d].getMonth() + 1)).slice(-2) + "-" + ("0" + days[d].getDate()).slice(-2) + "'></ul>";
+                                insertEvents(currDate);
+                            }
+                        }
+                    }
+                    // Increment for next week
+                    week_index++;
+                }
+            }
+            
+            // Updates calendar on page load
+            document.addEventListener("DOMContentLoaded", updateCalendar, false);
+
+            /***** LOGOUT FUNCTIONALITY *****/
+
+            // Ends user-session and redirects to login page
+            function logout(event) {
+                event.preventDefault();
+                const action = 'logout';
+                const data = { 'action': action };
+
+                fetch("calender-actions.php", {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                    headers: { 'content-type': 'application/json' }
+                })
+                .then(res => res.json())
+                .then(response => {
+                    if (response.success) {
+                        document.getElementById("login-body").classList.remove("hide");
+                        document.getElementById("calendar-body").classList.remove("show");
+                        document.getElementById("username").value = "";
+                        document.getElementById("password").value = "";
+                        document.getElementById("weeks").innerHTML = "";
+                        user_events = [];
+                    } else {
+                        alert("Error logging in: " , response.message);
+                    }
+                }) 
+                .catch(err => console.error(err));
+            }
+
+            // To run logout function on logout button press
+            document.getElementById("logout-btn").addEventListener("click", logout, false);
+
+
+            /***** ADD EVENT MODAL *****/
+
+            // Add-event modal element
+            const add_event_modal = document.getElementById("add-event-modal");
+
+            // To show new-event modal upon add-event button press
+            document.getElementById("new-event-btn").addEventListener("click", (event) => {
+                event.preventDefault();
+                add_event_modal.classList.add("show");
+                document.getElementById("body").style.overflow = "hidden";
+
+                const todayDate = new Date();
+                const todayDateFormatted = todayDate.getFullYear() + "-" + ("0" + (todayDate.getMonth() + 1)).slice(-2) + "-" + ("0" + todayDate.getDate()).slice(-2);
+                const todayTimeFormatted = (todayDate.getMinutes() > 45 ? ("0" + (todayDate.getHours() + 1)).slice(-2) : ("0" + (todayDate.getHours())).slice(-2)) + ":" + ("0" + ((15 * parseInt(todayDate.getMinutes() / 15) + 15) % 60)).slice(-2);
+                
+                document.getElementById("event-date").value = todayDateFormatted;
+                document.getElementById("event-time").value = todayTimeFormatted;
+            }, false);
+
+            // To display/hide group member list in add-event modal based on check
+            const group_event_checkbox = document.getElementById("group-event-selector");
+            const group_list_container = document.getElementById("group-list-container");
+            group_event_checkbox.addEventListener("change", (event) => {
+                event.preventDefault()
+                if (group_event_checkbox.checked) {
+                    group_list_container.classList.add("show");
+                } else {
+                    group_list_container.classList.remove("show");
+                }
+            }, false);
+
+            // Verify that username of group member is at least as long as a registered user's username
+            const add_group_member_btn = document.getElementById("add-group-member-btn");
+            add_group_member_btn.addEventListener("click", (event) => {
+                event.preventDefault();
+                const group_member_username = document.getElementById("group-member-username").value;
+                if (!(group_member_username.length < 6)) {
+                    const group_list = document.getElementById("group-member-list");
+                    group_list.innerHTML += "<li>" + group_member_username + "</li>"
+                    document.getElementById("group-member-username").value = "";
+                }
+            }, false);
+
+            // To close new-event modal upon close button press
+            document.getElementById("close-modal-btn").addEventListener("click", (event) => {
+                event.preventDefault();
+                add_event_modal.classList.remove("show");
+
+                document.getElementById("event-title").value = "";
+                document.getElementById("event-date").value = currentMonth.year + "-" + ("0" + (currentMonth.month + 1)).slice(-2) + "-01";
+                document.getElementById("event-time").value = "00:00";
+                document.getElementById("event-tag").value = "None";
+                document.getElementById("body").style.overflow = "auto";
+                document.getElementById("group-event-selector").checked = false;
+                document.getElementById("group-list-container").classList.remove("show");
+
+                const group_list = document.getElementById("group-member-list");
+                group_list.innerHTML = "";
+            }, false);
+
+            // To close new-event modal upon 'esc' key press
+            document.addEventListener("keydown", (event) => {
+                if (event.key == "Enter") {
+                    event.preventDefault();
+                } else if ((event.key == "Esc" || event.key == "Escape") && add_event_modal.classList.contains("show")) {
+                    add_event_modal.classList.remove("show");
+                    document.getElementById("event-title").value = "";
+                    document.getElementById("event-date").value = currentMonth.year + "-" + ("0" + (currentMonth.month + 1)).slice(-2) + "-01";
+                    document.getElementById("event-time").value = "00:00";
+                    document.getElementById("event-tag").value = "None";
+                    document.getElementById("body").style.overflow = "auto";
+                }
+            }, false);
+
+            // To save event information upon save button click
+            document.getElementById("save-event-btn").addEventListener("click", async () => {
+                const title = document.getElementById("event-title").value;
+                const date = document.getElementById("event-date").value;
+                const time = document.getElementById("event-time").value;
+                const tag = document.getElementById("event-tag").value;
+                const color = document.getElementById("event-color").value;
+                const group_list = document.getElementById("group-member-list");
+
+                // Get group members 
+                const group_users = group_list.querySelectorAll('li');
+                const group_members = Array.from(group_users).map(li => li.textContent);
+                const action = "add-event";
+
+                const data = { "title": title, "date": date, "time": time, "tag": tag, "color": color, "group-members": group_members, "action": action, "token": token_value };
+
+                let event_id = 0;
+                try {
+                    const res = await fetch ("calender-actions.php", {
+                        method: "POST",
+                        body: JSON.stringify(data),
+                        headers: { 'content-type': 'application/json' }
+                    });
+                    const response = await res.json();
+
+                    if (response.success) {
+                        event_id = response.data;
+                        // Display event in calendar if successfully saved
+                        if (currentMonth.year == date.substring(0, 4) && currentMonth.month + 1 == date.substring(5, 7)) {
+                            document.getElementById("events-list-" + date.substring(0, 4) + "-" + date.substring(5, 7) + "-" + date.substring(8, 10)).innerHTML += "<li class='event-entry' id='event-" + date + "-" + event_id + 
+                                    "'><button class='event-btn' name='btn' id='event-btn-" + date + "-" + event_id + "' data-id='" + event_id + "'' data-title='" + title + "' data-date='" + date + "' data-time='" + time + 
+                                    "' data-tag='" + tag + "' data-color='" + color + "' data-event_type = 'User Event'>" + title + "</button></li>"; 
+                            document.getElementById("event-" + date + "-" + event_id).style.backgroundColor = color;
+                        } 
+                    } else {
+                        // Display alert to inform guests of account-creation requirement
+                        if (response.error == "guest-account") {
+                            alert("You must create an account to add events and share your calendar");
+                        } else {
+                            alert("Error adding event: " + response.message);
+                        }
+                    }
+                } catch(err) {
+                    console.error(err);
+                    return;
+                }
+
+                // After completing, reset input values and close modal
+                add_event_modal.classList.remove("show");
+                document.getElementById("event-title").value = "";
+                document.getElementById("event-date").value = currentMonth.year + "-" + ("0" + (currentMonth.month + 1)).slice(-2) + "-01";
+                document.getElementById("event-time").value = "00:00";
+                document.getElementById("event-tag").value = "None";
+                document.getElementById("body").style.overflow = "auto";
+            }, false)
+
+
+            /***** VIEW (UPDATE, DELETE) EVENT MODAL *****/
+
+            // View-event modal element
+            const view_event_modal = document.getElementById("view-event-modal");
+
+            // To open view-event modal on event button press
+            document.addEventListener("DOMContentLoaded", function () {
+                // Add button press event to each event displayed on calendar
+                document.getElementById("weeks").addEventListener("click", function (event) {
+                    if (event.target.classList.contains("event-btn")) {
+                        event.preventDefault();
+                        view_event_modal.classList.add("show");
+                        document.getElementById("body").style.overflow = "hidden";
+
+                        const event_id = event.target.dataset.id;
+                        const event_title = decodeHtml(event.target.dataset.title);
+                        const event_date = event.target.dataset.date;
+                        const event_time = event.target.dataset.time;
+                        const event_tag = event.target.dataset.tag;
+                        const event_color = event.target.dataset.color;
+                        const event_type = event.target.dataset.event_type;
+
+                        document.getElementById("view-event-id").value = event_id;
+                        document.getElementById("view-event-title").value = event_title;
+                        document.getElementById("view-event-date").value = event_date;
+                        document.getElementById("view-event-time").value = event_time;
+                        document.getElementById("view-event-tag").value = event_tag;
+                        document.getElementById("view-event-color").value = event_color;
+                        document.getElementById("event-type-header").textContent = event_type;
+                    }
+                });
+            });
+
+            // To delete event based on delete button press
+            document.getElementById("delete-event-btn").addEventListener("click", (event) => {
+                event.preventDefault();
+                const event_id = document.getElementById("view-event-id").value;
+                const event_title = document.getElementById("view-event-title").value;
+                const event_date = document.getElementById("view-event-date").value;
+                const event_time = document.getElementById("view-event-time").value;
+                const event_tag = document.getElementById("view-event-tag").value;
+                const event_color = document.getElementById("view-event-color").value;
+                const action = "delete-event";
+                const data = { "id": event_id, "title": event_title, "date": event_date, "time": event_time, "tag": event_tag, "color": event_color, "action": action, "token": token_value };
+
+                view_event_modal.classList.remove("show");
+                document.getElementById("body").style.overflow = "auto";
+
+                fetch("calender-actions.php", {
+                    method: "POST",
+                    body: JSON.stringify(data),
+                    headers: { "content-type": "application/json"  }
+                })
+                .then(res => res.json())
+                .then(async response => {
+                    // If event deletion successful, remove event(s) from calendar display
+                    if (response.success) {
+                        let deleted_events = response.deleted_events;
+                        let current_month_deleted_events = deleted_events.filter((event) => currentMonth.year == event[1].substring(0, 4) && currentMonth.month + 1 == event[1].substring(5, 7));
+                        current_month_deleted_events.forEach((event) => {
+                            let event_entry = document.getElementById("event-" + event[1] + "-" + event[0]);
+                            document.getElementById("events-list-" + event[1].substring(0, 4) + "-" + event[1].substring(5, 7) + "-" + event[1].substring(8, 10)).removeChild(event_entry);
+                        })
+                    } else {
+                        alert("An error occurred while deleting event");
+                    }
+                })
+                .catch(err => console.error(err));
+            }, false);
+
+            // To update event in view-event modal
+            document.getElementById("update-event-btn").addEventListener("click", () => {
+                event.preventDefault();
+                const event_id = document.getElementById("view-event-id").value;
+                const event_title = document.getElementById("view-event-title").value;
+                const event_date = document.getElementById("view-event-date").value;
+                const event_time = document.getElementById("view-event-time").value;
+                const event_tag = document.getElementById("view-event-tag").value;
+                const event_color = document.getElementById("view-event-color").value;
+                const event_type = document.getElementById("event-type-header").textContent;
+                const action = "update-event";
+                const data = { "id": event_id, "title": event_title, "date": event_date, "time": event_time, "tag": event_tag, "color": event_color, "action": action, "token": token_value };
+
+                view_event_modal.classList.remove("show");
+                document.getElementById("body").style.overflow = "auto";
+
+                fetch("calender-actions.php", {
+                    method: "POST",
+                    body: JSON.stringify(data),
+                    headers: { "content-type": "application/json"  }
+                })
+                .then(res => res.json())
+                .then(response => {
+                    // If update event successful, remove current display and replace with updated display
+                    if (response.success) {
+                        if (currentMonth.year == event_date.substring(0, 4) && currentMonth.month + 1 == event_date.substring(5, 7)) {
+                            let event_entry = document.getElementById("event-" + event_date + "-" + event_id);
+                            document.getElementById("events-list-" + event_date.substring(0, 4) + "-" + event_date.substring(5, 7) + "-" + event_date.substring(8, 10)).removeChild(event_entry);
+                            document.getElementById("events-list-" + event_date.substring(0, 4) + "-" + event_date.substring(5, 7) + "-" + event_date.substring(8, 10)).innerHTML += "<li class='event-entry' id='event-" + event_date + "-" + event_id + 
+                                    "'><button class='event-btn' name='btn' id='event-btn-" + event_date + "-" + event_id + "' data-id='" + event_id + "'' data-title='" + event_title + "' data-date='" + event_date + "' data-time='" + event_time + 
+                                    "' data-tag='" + event_tag + "' data-color='" + event_color + "' data-event_type = '" + event_type + "'>" + event_title + "</button></li>"; 
+                            document.getElementById("event-" + event_date + "-" + event_id).style.backgroundColor = event_color;
+                        } 
+                    } else {
+                        alert("An error occurred while deleting event");
+                    }
+                })
+                .catch(err => console.error(err));
+            }, false);
+
+            // To close view-event modal upon close button press
+            document.getElementById("exit-ve-modal-btn").addEventListener("click", (event) => {
+                event.preventDefault();
+                view_event_modal.classList.remove("show");
+
+                document.getElementById("event-title").value = "";
+                document.getElementById("event-date").value = currentMonth.year + "-" + ("0" + (currentMonth.month + 1)).slice(-2) + "-01";
+                document.getElementById("event-time").value = "00:00";
+                document.getElementById("event-tag").value = "None";
+                document.getElementById("body").style.overflow = "auto";
+            }, false);
+
+
+            /***** SHARE CALENDAR MODAL *****/
+
+            // Open share calendar modal on share calendar button press
+            const share_calendar_modal = document.getElementById("share-calendar-modal");
+            document.getElementById("share-calender-btn").addEventListener("click", (event) => {
+                event.preventDefault();
+                share_calendar_modal.classList.add("show");
+                document.getElementById("body").style.overflow = "hidden";
+            });
+
+            // Submit share request 
+            document.getElementById("confirm-share-calendar-btn").addEventListener("click", (event) => {
+                event.preventDefault();
+                const receiver = document.getElementById("receiver-username").value;
+                const action = "share-calendar";
+                const data = { "receiver": receiver, "action": action };
+
+                fetch("calender-actions.php", {
+                    method: "POST",
+                    body: JSON.stringify(data),
+                    headers: { "content-type": "application/json" }
+                })
+                .then(res => res.json())
+                .then(response => {
+                    if (response.success) { 
+                        alert("Successfully shared calender with " + receiver) 
+                    } else {
+                        if (response.error == "guest-account") {
+                            alert("You must create an account to add events and share your calendar");
+                        } else {
+                            alert("Failed to share calender as the user entered does not exist");
+                        }
+                    }
+                })
+                .catch(err => console.error(err));
+
+                share_calendar_modal.classList.remove("show");
+                document.getElementById("receiver-username").value = "";
+                document.getElementById("body").style.overflow = "auto";
+            }, false);
+
+            // Close share calendar modal on close button press
+            document.getElementById("exit-sc-modal-btn").addEventListener("click", (event) => {
+                event.preventDefault();
+                share_calendar_modal.classList.remove("show");
+                document.getElementById("receiver-username").value = "";
+                document.getElementById("body").style.overflow = "auto";
+            }, false);
+
+        </script>
+    </div>
+</body>
+</html>

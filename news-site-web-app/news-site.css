@@ -1,0 +1,349 @@
+body {
+    background-color: #383836;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    color: white;
+}
+
+.header-container {
+    background-color: #eb7734;
+    width: 100%;
+    justify-content: center;
+    align-items: flex-start;
+    text-align: center;
+    padding: 1px 0px;
+    padding-bottom: 20px;
+}
+
+.header-text {
+    color: whitesmoke;
+    font-size: 35px;
+    letter-spacing: 1px;
+    font-weight: 400;
+    text-align: center;
+}
+
+.nav-bar {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.nav-options {
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    margin: auto;
+    width: 70%;
+}
+
+.page-header-options {
+    background-color: #eb7734;
+    color: white;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    border: none;
+    border-left: none;
+    border-right: solid;
+    margin-left: -4px;
+    border-color: white;
+    padding: 10px 15px;
+    font-size: 18px;
+    font-weight: 100;
+}
+
+.page-header-options:last-child {
+    border-right: none;
+}
+
+.page-header-options:hover {
+    background-color: #bf571b;
+    transition: ease-in 0.2s;
+}
+
+.username {
+    font-size: 18px;
+    font-weight: bolder;
+    margin: 10px;
+}
+.logout-options {
+    display: flex;
+    margin-left: auto;
+    text-align: right;
+    justify-content: right;
+    padding-right: 15px;
+    width: 15%;
+}
+
+.comment-field {
+    font-size: 18px;
+    width: 60%;
+    height: 30px;
+}
+
+.logout-btn {
+    background-color: #bf571b;
+    border-color: white;
+    border-width: 1px;
+    font-size: 18px;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    font-weight: 50;
+    color: whitesmoke;
+    border-style: solid;
+    border-radius: 8px;
+    padding: 5px 8px;
+}
+
+.logout-btn:hover {
+    background-color: white;
+    color:#bf571b;
+    transition: ease-in 0.15s;
+    border-color: #bf571b;
+}
+
+.story-container {
+    justify-content: center;
+    text-align: left;
+    width: 100%;
+    margin: auto;
+}
+
+.story-body {
+    list-style-type: none;
+    width: 70%;
+}
+.story-entry {
+    width: 80%;
+    padding: 0px;
+    margin-top: 0px;
+    margin-bottom: 50px;
+}
+
+.story-entry-container {
+    margin: auto;
+    width: 100%;
+    margin-bottom: 30px;
+}
+
+.entry-header-container {
+    background-color: #eb7734;
+    border: none; 
+    margin-bottom: 0;
+    text-indent: 15px;
+}
+
+.entry-header-container:hover {
+    background-color: #bf571b;
+    transition: ease-in 0.2s;
+}
+
+.entry-header-container:hover .story-entry-title {
+    background-color: #bf571b;
+    transition: ease-in 0.2s;
+}
+
+.entry-header-container:hover .entry-pub-date {
+    background-color: #bf571b;
+    transition: ease-in 0.2s;
+}
+
+.story-entry-header {
+    display: flex;
+    background-color: #eb7734;
+    color: whitesmoke;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    font-size: 24px;
+    border: none;
+    width: 100%;
+    padding: 0px 0px;
+}
+
+
+.story-entry-title {
+    background-color: #eb7734;
+    font-size: 24px;
+    width: 90%;
+    font-weight: bold;
+    border: none;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    color: white;
+    text-align: left;
+    padding: 8px 0px;
+    padding-bottom: 0px;
+}
+
+.entry-pub-date {
+    background-color: #eb7734;
+    font-size: 16px;
+    width: 100%;
+    padding-bottom: 10px;
+    text-indent: 15px;
+}
+
+.story-entry-body {
+    background-color: #414542;
+    font-size: 18px;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    padding: 6px 0px;
+    text-indent: 15px;
+    font-weight: lighter;
+    color: rgb(233, 231, 231);
+    width: 100%;
+    border: none;
+}
+
+.entry-body {
+    background-color: #414542;
+}
+
+.story-genre-link {
+    display: flex;
+    width: 100%
+}
+
+strong {
+    color: lightgray;
+}
+
+.body-title {
+    text-align: center;
+}
+
+.edit-story-form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+    justify-content: center;
+}
+
+.edit-story-form > * {
+    width: 80%;
+    font-size: 22px;
+    margin: auto;
+}
+
+.post-story-container {
+    width: 80%;
+    margin: auto;
+}
+
+textarea {
+    resize: none !important;
+}
+
+.comment-list {
+    list-style-type: none;
+    width: 30%;
+}
+
+.comment-header-container {
+    display: flex;
+    margin: auto;
+    justify-content: space-between;
+    background-color: #414542;
+    font-size: 14px;
+    padding: 5px 5px;
+}
+
+.comment-body-container {
+    display: flex;
+    margin: auto;
+    justify-content: space-between;
+    background-color: #414542;
+    font-size: 14px;
+    padding: 5px 5px;
+}
+
+.vote-btn {
+    background-color: #bf571b;
+    border-color: white;
+    border-width: 1px;
+    font-size: 18px;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    font-weight: 50;
+    color: whitesmoke;
+    border-style: solid;
+    border-radius: 8px;
+    padding: 1px 1px;
+    margin: 0px;
+}
+
+.vote-field {
+    text-align: center;
+    width: auto;
+}
+
+.comment-field {
+    text-align: left;
+    width: auto;
+    /* vertical-align:
+     auto; */
+    padding: 0px 15px;
+    padding-bottom: 70px;
+    margin: auto;
+}
+
+.comment-options-field {
+    justify-content: right;
+    text-align: right;
+    width: auto;
+}
+
+.comment-header {
+    padding: 5px;
+}
+
+.comment-entry {
+    margin-bottom: 20px;
+    background-color:#414542;
+}
+
+.edit-comment-field {
+    font-size: 18px;
+    margin: 10px 5px;
+    width: auto;
+    height: 50px;
+}
+
+.guest-message {
+    padding: 10px 10px;
+}
+
+.login-container {
+    width: 100%;
+    justify-content: center;
+    margin: auto;
+    text-align: center;
+    justify-items: center;
+}
+
+.login-form {
+    text-align: center;
+    justify-content: center;
+}
+
+.register-input {
+    width: 30%;
+    justify-content: center;
+    text-align: center;
+    margin: auto;
+}
+
+.login-input {
+    width: 60%;
+    justify-content: center;
+    text-align: center;
+    margin: auto;
+    margin-bottom: 20px;
+}
+
+.registration-form {
+    margin: auto;
+}
+
+.login-form {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+}
