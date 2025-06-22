@@ -72,8 +72,7 @@ Welcome! This repository serves as a collection of my coding projects. Each proj
 - **Languages**: `JavaScript`, `Python`, `Java`, `PHP`, `SQL`, `C++`, `Ruby`, `SML` 
 - **Frameworks/Libraries**: `React`, `Vue`, `FastAPI`, `Laravel`, `Socket.IO`, `Selenium`
 - **Databases**: `PostgreSQL`, `MySQL`
-- **Dev Tools**: `Git`, `VS Code`, `GitHub Actions`, `AWS (EC2)`
-- **AWS**: `Amazon Web Services (AWS)`, `AWS Cloud`, `AWS Cloud Computing`, `AWS Cloud Foundations`, `Cloud Platform`
+- **Dev Tools**: `Git`, `VS Code`, `GitHub Actions`, `AWS`
 
 ---
 
