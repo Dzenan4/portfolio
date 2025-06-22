@@ -78,7 +78,6 @@ Welcome! This repository serves as a collection of my coding projects. Each proj
 
 ## Certifications
 
----
 AWS Cloud Quest: Cloud Practitioner – Interactive certification with hands-on labs for core AWS services [View my badge](https://www.credly.com/badges/b26a18ce-3057-49dd-84fc-9321daf24b41/public_url)
 
 ---
