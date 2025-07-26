@@ -4,9 +4,20 @@ Welcome! This repository serves as a collection of my coding projects. Each proj
 
 ---
 
-## My Projects
+## My Projects (Ranked by Most Recent)
 
-### Project 1: **Customer Check Cashing Application**
+### Project 1: **Expi-Tracker**
+**Description**: This app helps grocery stores track and stay up to date with expiring products through a sleek UI
+**Tech**: `React`, `TypeScripr`, `Python (FastAPI)`, `AWS RDS (PostgreSQL)`  
+**Repository**: Contact for access
+**Highlights**:
+- 🔹 Users can scan product barcodes to populate product fields quicker than manual entry
+- 🔹 Access and refresh tokens ensure user sessions are secure and safe from wrongdoers 
+- 🔹 A dashboard page displays upcoming product expirations in order of most recent allowing users to immediately see which products need to be taken off store shelves.
+
+---
+
+### Project 2: **Customer Check Cashing Application**
 **Description**: This app allows financial institutions to create an account and keep track of customers, checks, and transactions. 
 **Tech**: `Laravel`, `Vue.js`, `PostgreSQL`, `Tailwind CSS`  
 **Repository**: [View on GitHub](https://github.com/Dzenan4/portfolio/tree/main/check-cashing-web-app)
@@ -17,7 +28,7 @@ Welcome! This repository serves as a collection of my coding projects. Each proj
 
 ---
 
-### Project 2: **Mock Google Calendar**
+### Project 3: **Mock Google Calendar**
 **Description**: This web application is a basic version of Google Calendar, allowing people to create accountsand log in. Once logged in, users can add, edit, share, and delete events.
 **Tech**: `JavaScript`, `PHP`, `MySQL`, `AWS EC2`  
 **Repository**: [View on GitHub](https://github.com/Dzenan4/portfolio/tree/main/calendar-web-app)  
@@ -28,7 +39,7 @@ Welcome! This repository serves as a collection of my coding projects. Each proj
 
 ---
 
-### Project 3: **Chatroom App**
+### Project 4: **Chatroom App**
 **Description**: An app where people can anonymously create rooms and chat!
 **Tech**: `JavaScript`, `Socket.IO`, `AWS EC2`, `Apache`  
 **Repository**: [View on GitHub](https://github.com/Dzenan4/portfolio/tree/main/chatroom-web-app)  
@@ -39,7 +50,7 @@ Welcome! This repository serves as a collection of my coding projects. Each proj
 
 ---
 
-### Project 4: **News Site App**
+### Project 5: **News Site App**
 **Description**: An app where users can upload and view news articles
 **Tech**: `PHP`, `MySQL`, `AWS EC2`, `Apache`  
 **Repository**: [View on GitHub](https://github.com/Dzenan4/portfolio/tree/main/news-site-web-app)  
@@ -50,7 +61,7 @@ Welcome! This repository serves as a collection of my coding projects. Each proj
 
 ---
 
-### Project 5: **File System App**
+### Project 6: **File System App**
 **Description**: An app where users can upload, edit, view, and delete files of their choosing!
 **Tech**: `PHP`, `AWS EC2`, `Apache`  
 **Repository**: [View on GitHub](https://github.com/Dzenan4/portfolio/tree/main/f-sys-web-app)  
