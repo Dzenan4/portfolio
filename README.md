@@ -10,6 +10,7 @@ Welcome! This repository serves as a collection of my coding projects. Each proj
 **Description**: This app helps grocery stores track and stay up to date with expiring products through a sleek UI
 **Tech**: `React`, `TypeScripr`, `Python (FastAPI)`, `AWS RDS (PostgreSQL)`  
 **Repository**: Contact for access
+**Images**: [View on GitHub](https://github.com/Dzenan4/portfolio/tree/main/expi-tracker)
 
 **Highlights**:
 - 🔹 Users can scan product barcodes to populate product fields quicker than manual entry
@@ -110,4 +111,5 @@ Feel free to reach out:
 ---
 
 > Thanks for visiting! Feel free to explore the individual project repositories linked above for more details.
+
 
