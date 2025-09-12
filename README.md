@@ -10,6 +10,7 @@ Welcome! This repository serves as a collection of my coding projects. Each proj
 **Description**: This app helps grocery stores track and stay up to date with expiring products through a sleek UI
 **Tech**: `React`, `TypeScripr`, `Python (FastAPI)`, `AWS RDS (PostgreSQL)`  
 **Repository**: Contact for access
+
 **Highlights**:
 - 🔹 Users can scan product barcodes to populate product fields quicker than manual entry
 - 🔹 Access and refresh tokens ensure user sessions are secure and safe from wrongdoers 
@@ -21,6 +22,7 @@ Welcome! This repository serves as a collection of my coding projects. Each proj
 **Description**: This app allows financial institutions to create an account and keep track of customers, checks, and transactions. 
 **Tech**: `Laravel`, `Vue.js`, `PostgreSQL`, `Tailwind CSS`  
 **Repository**: [View on GitHub](https://github.com/Dzenan4/portfolio/tree/main/check-cashing-web-app)
+
 **Highlights**:
 - 🔹 Users can upload images of customer driver's licenses and photos of checks cashed for optimal record keeping
 - 🔹 When entering the address of a customer or check, the implementation of Google's Places API allows users to select an address from a dropdown
@@ -32,6 +34,7 @@ Welcome! This repository serves as a collection of my coding projects. Each proj
 **Description**: This web application is a basic version of Google Calendar, allowing people to create accountsand log in. Once logged in, users can add, edit, share, and delete events.
 **Tech**: `JavaScript`, `PHP`, `MySQL`, `AWS EC2`  
 **Repository**: [View on GitHub](https://github.com/Dzenan4/portfolio/tree/main/calendar-web-app)  
+
 **Key Features**:
 - ✅ Users can share their entire calendar with other users
 - ✅ Users can create group events and add other users by their username to those events
@@ -43,6 +46,7 @@ Welcome! This repository serves as a collection of my coding projects. Each proj
 **Description**: An app where people can anonymously create rooms and chat!
 **Tech**: `JavaScript`, `Socket.IO`, `AWS EC2`, `Apache`  
 **Repository**: [View on GitHub](https://github.com/Dzenan4/portfolio/tree/main/chatroom-web-app)  
+
 **Notable Features**:
 - Users can send private messages to other users, while also being able to block others
 - Room admins can kick or ban other users in their room
@@ -54,6 +58,7 @@ Welcome! This repository serves as a collection of my coding projects. Each proj
 **Description**: An app where users can upload and view news articles
 **Tech**: `PHP`, `MySQL`, `AWS EC2`, `Apache`  
 **Repository**: [View on GitHub](https://github.com/Dzenan4/portfolio/tree/main/news-site-web-app)  
+
 **Notable Features**:
 - Users can add categories to their articles such as technology, science, or sports
 - Users can upvote the comments of others similar to StackOverFlow, allowing popular comments to be seen more easily
@@ -65,6 +70,7 @@ Welcome! This repository serves as a collection of my coding projects. Each proj
 **Description**: An app where users can upload, edit, view, and delete files of their choosing!
 **Tech**: `PHP`, `AWS EC2`, `Apache`  
 **Repository**: [View on GitHub](https://github.com/Dzenan4/portfolio/tree/main/f-sys-web-app)  
+
 **Notable Features**:
 - Users can view their uploaded files in their browser so long as the browser they are using supports it
 - Users can rename files that they have uploaded
@@ -74,7 +80,7 @@ Welcome! This repository serves as a collection of my coding projects. Each proj
 
 ## Resume
 
-- For those who need it, I have attached my resume! You can view it here: [View my resume](https://github.com/Dzenan4/portfolio/blob/main/DZ-WebDev-Resume.pdf)
+- For those who need it, I have attached my resume! You can view it here: [View my resume](https://github.com/Dzenan4/portfolio/blob/main/DZ-Resume.pdf)
 
 ---
 
@@ -83,7 +89,7 @@ Welcome! This repository serves as a collection of my coding projects. Each proj
 - **Languages**: `JavaScript`, `Python`, `Java`, `PHP`, `SQL`, `C++`, `Ruby`, `SML` 
 - **Frameworks/Libraries**: `React`, `Vue`, `FastAPI`, `Laravel`, `Socket.IO`, `Selenium`
 - **Databases**: `PostgreSQL`, `MySQL`
-- **Dev Tools**: `Git`, `VS Code`, `GitHub Actions`, `AWS`
+- **Dev Tools**: `Git`, `VS Code`, `GitHub Actions`, `AWS`, `Docker`, `Kubernetes`
 
 ---
 
@@ -104,3 +110,4 @@ Feel free to reach out:
 ---
 
 > Thanks for visiting! Feel free to explore the individual project repositories linked above for more details.
+
